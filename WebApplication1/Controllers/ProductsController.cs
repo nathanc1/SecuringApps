@@ -97,7 +97,7 @@ namespace WebApplication1.Controllers
                             {
                                 using (FileStream fsOut = new FileStream(absolutePath, FileMode.CreateNew, FileAccess.Write))
                                 {
-                                    throw new Exception();
+                                    //throw new Exception();
                                     f.CopyTo(fsOut);
                                 }
 
