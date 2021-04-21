@@ -13,6 +13,7 @@ using ShoppingCart.Application.Interfaces;
 using ShoppingCart.Application.ViewModels;
 using WebApplication1.ActionFilters;
 using WebApplication1.Models;
+using WebApplication1.Utility;
 
 namespace WebApplication1.Controllers
 {
@@ -149,6 +150,8 @@ namespace WebApplication1.Controllers
         [OwnerAuthorize]
         public IActionResult Edit(Guid id)
         {
+           /* string iDecrypted = Encryption.SymmetricDecrypt(id);*/
+
             var prod = _prodService.GetProduct(id);
             return View(prod);
         }

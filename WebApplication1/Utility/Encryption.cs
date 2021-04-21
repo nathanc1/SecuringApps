@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
+using static WebApplication1.Utility.Encryption;
 
 namespace WebApplication1.Utility
 {
@@ -41,13 +42,9 @@ namespace WebApplication1.Utility
     {
         /// This method takes a string and returns the digest as a string
         /// 
-        public class SymmetricKeys
-        {
-            public byte[] SecretKey { get; set; }
-            public byte[] Iv { get; set; }
-        }
+     
 
-        public string Hash(string clearText)
+        public static string Hash(string clearText)
         {
             //convert the clearText into an array of bytes
             //cleartext is a non base64 data it has to be converted this way:
@@ -59,7 +56,7 @@ namespace WebApplication1.Utility
             return digestAsStrings;
         }
 
-        public byte[] Hash(byte[] clearTextBytes)
+        public static byte[] Hash(byte[] clearTextBytes)
         {
             SHA512 myAlg = SHA512.Create();
 
@@ -68,16 +65,16 @@ namespace WebApplication1.Utility
 
         }
 
-        string password = "Pa$$w0rd";
+        static string password = "Pa$$w0rd";
 
-        byte[] salt = new byte[]
+        static byte[] salt = new byte[]
         {
             20,1,34,56,78,34,11,111,234,43,180,139,127,34,52,45,255,253,1
         };
 
         //this method is used to take in clear data and encrypt it and returns back the cipher (the encrypted data)
 
-        public byte[] SymmetricEncrypt(byte[] clearData)
+        public static byte[] SymmetricEncrypt(byte[] clearData)
         {
             //Note:
             //1st thing to think of how you are going to handle the keys
@@ -125,7 +122,10 @@ namespace WebApplication1.Utility
 
 
         }
-        public SymmetricKeys GenerateKeys()
+
+
+
+        public static SymmetricKeys GenerateKeys()
         {
             //password + Salt >>>> algorithm >>> secret key + IV (which is the input needed by the encryption algorithm
             Rijndael myAlg = Rijndael.Create();
@@ -143,11 +143,125 @@ namespace WebApplication1.Utility
 
         }
 
-       // public string SymmetricEncrypt(string ClearData)
-      // {
+        public static byte[] SymmetricDecrypt(byte[] clearData)
+        {
+            //0 declare algorithm to use
+            Rijndael myAlg = Rijndael.Create();
+            //1.first we generate the secret key and iv
+            var keys = GenerateKeys();
 
-       // }
+            MemoryStream msIn = new MemoryStream(clearData);
+            msIn.Position = 0; //making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
 
+            MemoryStream msOut = new MemoryStream();
 
+            //4.declaring a stream which handles data decryption
+            CryptoStream cs = new CryptoStream(msOut, //the engine that operates encypting medium
+                myAlg.CreateDecryptor(keys.SecretKey, keys.Iv), //this will write the data fed into the medium
+                CryptoStreamMode.Write
+                );
+
+            //5. we start encrypting engine
+            msIn.CopyTo(cs);
+
+            //6. make sure that the data is all written (flushed) into msOut
+            cs.FlushFinalBlock();
+
+            //7
+            cs.Close();
+
+            //8
+            return msOut.ToArray();
+        }
+
+        
+
+         public static string SymmetricEncrypt(string ClearData)
+         {
+            //1. convert
+            //  To convert any input (given by the user) we normally use Econding.<character set>.GetByes(...)
+            byte[] clearDataAsBytes = Encoding.UTF32.GetBytes(ClearData);
+
+            //2. encrypting
+            byte [] cipherAsBytes = SymmetricEncrypt(clearDataAsBytes);
+
+            //3.converting back to a string
+            // to convert from base64 bytes ( which is the output of any cryptographic algorithm) we have to use Convert.ToBase64String
+            string cipher = Convert.ToBase64String(cipherAsBytes);
+
+            //replace / + =
+
+            return cipher;
+         }
+
+        public static string SymmetricDecrypt(string cipher)
+        {
+            //1. convert
+            //  To convert any input (given by the user) we normally use Econding.<character set>.GetByes(...)
+            byte[] cipherDataAsBytes = Convert.FromBase64String(cipher);
+
+            //2. decryption
+            byte[] clearDataAsBytes = SymmetricDecrypt(cipherDataAsBytes);
+
+            //3.converting back to a string
+            // to convert from base64 bytes ( which is the output of any cryptographic algorithm) we have to use Convert.ToBase64String
+            string originalText = Encoding.UTF32.GetString(clearDataAsBytes);
+
+            return originalText;
+        }
+
+        //Asymmetric Encryption/Decryption
+        //public key = is used to encrypt
+        //private key = is used to decrypt
+
+        //my recommendation is thiS:
+        //when a user is registered in addition to his/her details, you also generate this pair of keys (and store them in the db)
+
+    
+
+        public static AsymmetricKeys GenerateAsymmetricKeys()
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+
+            AsymmetricKeys myKeys = new AsymmetricKeys()
+            {
+                PublicKey = myAlg.ToXmlString(false),
+                PrivateKey = myAlg.ToXmlString(true)
+            };
+            return myKeys;
+         }
+        public static string AsymmetricEncrypt(string data, string publicKey)
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+
+            byte[] dataAsBytes = Encoding.UTF32.GetBytes(data);
+            byte[] cipher = myAlg.Encrypt(dataAsBytes, RSAEncryptionPadding.Pkcs1);
+
+            return Convert.ToBase64String(cipher);
+
+        }
+        public static string AsymmetricDecrypt(string cipher, string privateKey)
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+            myAlg.FromXmlString(privateKey);
+
+            byte[] cipherAsBytes = Convert.FromBase64String(cipher);
+
+            byte[] originalTextAsBytes = myAlg.Decrypt(cipherAsBytes, RSAEncryptionPadding.Pkcs1);
+
+            return Encoding.UTF32.GetString(originalTextAsBytes);
+
+        }
+    }
+
+    public class AsymmetricKeys
+    {
+        public string PublicKey { get; set; }
+        public string PrivateKey { get; set; }
+    }
+    public class SymmetricKeys
+    {
+        public byte[] SecretKey { get; set; }
+        public byte[] Iv { get; set; }
     }
 }
