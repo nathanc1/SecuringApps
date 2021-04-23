@@ -63,8 +63,10 @@ namespace WebApplication1.Controllers
 
                     if (file != null)
                     {
+                        MemoryStream userFile = new MemoryStream();
                         using (var f = file.OpenReadStream())
                         {
+                            f.CopyTo(userFile);
                             /*int byte1 = f.ReadByte();
                             int byte2 = f.ReadByte();
                             */

@@ -12,6 +12,8 @@ namespace ShoppingCart.Data.Context
         {
         }
 
+
+        public DbSet<Task> Tasks { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Member> Members { get; set; }

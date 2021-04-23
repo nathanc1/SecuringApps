@@ -252,6 +252,38 @@ namespace WebApplication1.Utility
             return Encoding.UTF32.GetString(originalTextAsBytes);
 
         }
+
+        public static MemoryStream HybridEncrypt(MemoryStream clearFile, string publicKey)
+        {
+            Rijndael myAlg = Rijndael.Create();
+            myAlg.GenerateKey(); myAlg.GenerateIV();
+            var key = myAlg.Key;var iv = myAlg.IV;
+
+            //2 .Encrypting the clearFile using Symmetric Encrpytion
+            //var encryptedBytes   SymmetricEncrypt(clearFileAsBytes, key, iv);
+
+
+            //3. Asymetrically encrypt using the public key, the symm key and iv above
+            string keyAsString = Convert.ToBase64String(key);
+            string encryptedKeyAsString = AsymmetricEncrypt(keyAsString, publicKey);
+
+            //4. Store the above encrypted data in one file
+            byte[] encryptedKey = Convert.FromBase64String(encryptedKeyAsString);
+            //byte[] encryptedIv;
+            //byte[] encryptedBytes;
+
+            MemoryStream msOut = new MemoryStream();
+            msOut.Write(encryptedKey, 0, encryptedKey.Length);
+            // msOut.Write(encryptedKey, 0, encryptedIv.Length);
+            //msOut.Write(encryptedKey, 0, encryptedBytes.Length);
+
+          //  MemoryStream encryptedFileContent = new MemoryStream(encryptedBytes);
+          //  encryptedFileContent.Position = 0;
+          //  encryptedFileContent.CopyTo(msOut);
+
+            return msOut;
+        }
+
     }
 
     public class AsymmetricKeys
