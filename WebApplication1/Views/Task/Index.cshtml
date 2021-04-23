@@ -43,7 +43,7 @@
                     @Html.DisplayFor(modelItem => item.email)
                 </td>
                 <td>
-                    @Html.ActionLink("Upload", "Upload", new { /* id=item.PrimaryKey */ }) 
+                    @Html.ActionLink("Upload", "Create", "File", new{  id=item.id  }) 
                 </td>
             </tr>
         }

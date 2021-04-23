@@ -8,33 +8,29 @@ using System.Text;
 
 namespace ShoppingCart.Data.Repositories
 {
-    public class TasksRepository : ITaskRepository
+    public class FilesRepository : IFilesRepository
     {
         ShoppingCartDbContext _context;
-
-        public TasksRepository(ShoppingCartDbContext context)
+        public FilesRepository(ShoppingCartDbContext context)
         {
             _context = context;
         }
-
-        public Guid AddTask(Task task)
+        public void AddFile(Files submission)
         {
-            task.id = Guid.NewGuid();
-            _context.Tasks.Add(task);
+            submission.Id = Guid.NewGuid();
+            _context.Files.Add(submission);
             _context.SaveChanges();
 
-            return task.id;
-
         }
 
-        public Task GetTask(Guid id)
+        public Files GetFile(Guid id)
         {
-            return _context.Tasks.SingleOrDefault(x => x.id == id);
+            return _context.Files.SingleOrDefault(x => x.Id == id);
         }
 
-        public IQueryable<Task> GetTasks()
+        public IQueryable<Files> GetFiles()
         {
-            return _context.Tasks;
+            return _context.Files;
         }
     }
 }

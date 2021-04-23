@@ -6,10 +6,12 @@ using System.Text;
 
 namespace ShoppingCart.Domain.Interfaces
 {
-    public interface ITasksRepository
+    public interface ITaskRepository
     {
         Guid AddTask(Task t);
+
         IQueryable<Task> GetTasks();
+
         Task GetTask(Guid id);
     }
 }

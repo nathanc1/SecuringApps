@@ -14,6 +14,7 @@ namespace ShoppingCart.Application.AutoMapper
             CreateMap<ProductViewModel, Product>().ForMember(x=>x.Category, opt => opt.Ignore());
             CreateMap<CategoryViewModel, Category>();
             CreateMap<TaskViewModel, Task>();
+            CreateMap<FileViewModel, Files>();
         }
     }
 }

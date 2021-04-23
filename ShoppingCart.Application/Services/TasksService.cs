@@ -13,9 +13,9 @@ namespace ShoppingCart.Application.Services
 {
     public class TasksService : ITasksService
     {
-        private ITasksRepository _taskrepo;
+        private ITaskRepository _taskrepo;
         private IMapper _autoMapper;
-        public TasksService(ITasksRepository tasksrepo, IMapper autoMapper)
+        public TasksService(ITaskRepository tasksrepo, IMapper autoMapper)
         {
             _taskrepo = tasksrepo;
             _autoMapper = autoMapper;

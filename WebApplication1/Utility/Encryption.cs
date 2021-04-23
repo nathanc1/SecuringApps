@@ -139,8 +139,6 @@ namespace WebApplication1.Utility
             };
 
             return keys;
-
-
         }
 
         public static byte[] SymmetricDecrypt(byte[] clearData)
