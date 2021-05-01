@@ -12,9 +12,6 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.id)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.descrption)
             </th>
             <th>
@@ -31,9 +28,6 @@
         {
             <tr>
                 <td>
-                    @Html.DisplayFor(modelItem => item.id)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.descrption)
                 </td>
                 <td>
@@ -43,7 +37,9 @@
                     @Html.DisplayFor(modelItem => item.email)
                 </td>
                 <td>
-                    @Html.ActionLink("Upload", "Create", "File", new{  id=item.id  }) 
+                    @Html.ActionLink("Upload", "Create", "File", new { id = item.id })
+
+                    @Html.ActionLink("View Submission", "ViewSubmission", "Task", new { id = item.id })
                 </td>
             </tr>
         }

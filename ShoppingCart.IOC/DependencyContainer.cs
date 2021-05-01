@@ -54,6 +54,8 @@ namespace ShoppingCart.IOC
             services.AddScoped<IFilesRepository, FilesRepository>();
             services.AddScoped<IFilesService, FileService>();
 
+            services.AddScoped<ICommentsRepository, CommentsRepository>();
+            services.AddScoped<ICommentsService, CommentsService>();
 
 
 

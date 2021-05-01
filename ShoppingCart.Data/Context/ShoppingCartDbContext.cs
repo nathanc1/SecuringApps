@@ -19,6 +19,8 @@ namespace ShoppingCart.Data.Context
         public DbSet<Member> Members { get; set; }
 
         public DbSet<Files> Files { get; set; }
+
+        public DbSet<Comment> Comments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -187,6 +187,8 @@ namespace WebApplication1.Utility
             // to convert from base64 bytes ( which is the output of any cryptographic algorithm) we have to use Convert.ToBase64String
             string cipher = Convert.ToBase64String(cipherAsBytes);
 
+            cipher = cipher.Replace("/", "£").Replace("+", "$").Replace("=", "*").Replace("&", "_");
+
             //replace / + =
 
             return cipher;
@@ -194,6 +196,8 @@ namespace WebApplication1.Utility
 
         public static string SymmetricDecrypt(string cipher)
         {
+            cipher = cipher.Replace("£", "/").Replace("$", "+").Replace("*", "=").Replace("_", "&");
+
             //1. convert
             //  To convert any input (given by the user) we normally use Econding.<character set>.GetByes(...)
             byte[] cipherDataAsBytes = Convert.FromBase64String(cipher);
@@ -282,6 +286,40 @@ namespace WebApplication1.Utility
             return msOut;
         }
 
+        public static string SignData(MemoryStream data, string privateKey)
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+            myAlg.FromXmlString(privateKey);
+
+            byte[] dataAsBytes = data.ToArray();
+
+            //Hash the data
+            byte[] digest = Hash(dataAsBytes);
+
+            byte[] signatureAsBytes = myAlg.SignHash(digest, "SHA512");
+            //save the signature in the database > table containing the file data
+
+            return Convert.ToBase64String(signatureAsBytes);
+
+
+        }
+
+        public static bool VerifyData(MemoryStream data, string publicKey, string signature)
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+            myAlg.FromXmlString(publicKey);
+
+            byte[] dataAsBytes = data.ToArray();
+
+            //Hash the data
+            byte[] digest = Hash(dataAsBytes);
+
+            byte[] signatureAsBytes = Convert.FromBase64String(signature);
+
+            bool valid = myAlg.VerifyHash(digest, "SHA512", signatureAsBytes);
+
+            return valid;
+        }
     }
 
     public class AsymmetricKeys

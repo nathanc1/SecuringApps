@@ -15,6 +15,7 @@ namespace ShoppingCart.Application.AutoMapper
             CreateMap<CategoryViewModel, Category>();
             CreateMap<TaskViewModel, Task>();
             CreateMap<FileViewModel, Files>();
+            CreateMap<CommentViewModel, Comment>();
         }
     }
 }

@@ -1,0 +1,31 @@
+﻿@model ShoppingCart.Application.ViewModels.CommentViewModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+
+
+<h4>CommentViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="commentDetails" class="control-label"></label>
+                <input asp-for="commentDetails" class="form-control" />
+                <span asp-validation-for="commentDetails" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+    @Html.ActionLink("Back", "Index", "File")
+
+

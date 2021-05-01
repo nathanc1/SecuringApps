@@ -3,22 +3,21 @@
 @{ 
     ViewData["Title"] = "Index";
 }
-
-
-    <p>
-        <a asp-action="Create">Create New</a>
-    </p>
+<h1>All Submissions</h1>
     <table class="table">
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Id)
+                    Task Description
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.email)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.file)
+                </th>
+                <th>
+
                 </th>
                 <th></th>
             </tr>
@@ -28,7 +27,7 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Id)
+                        @Html.DisplayFor(modelItem => item.task.descrption)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.email)
@@ -37,12 +36,14 @@
                         @Html.DisplayFor(modelItem => item.file)
                     </td>
                     <td>
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        @Html.ActionLink("Upload Comment", "Create", "Comment", new { id = item.Id })
+                        @Html.ActionLink("View Comment", "Index", "Comment", new { id = item.Id })
                     </td>
+
                 </tr>
             }
+
+          
         </tbody>
     </table>
 

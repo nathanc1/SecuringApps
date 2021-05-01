@@ -62,8 +62,13 @@ namespace WebApplication1.Controllers
                     byte[] whiteList = new byte[] { 37, 80, 68, 70 };
                     if (file != null)
                     {
+                        MemoryStream msIn = new MemoryStream();
                         using (var f = file.OpenReadStream())
                         {
+                            f.Position = 0;
+                          
+                            
+
                             byte[] buffer = new byte[4];
                             f.Read(buffer, 0, 4);
 
@@ -79,6 +84,8 @@ namespace WebApplication1.Controllers
                             }
                             //...other reading of bytes happening
                             f.Position = 0;
+
+                            f.CopyTo(msIn); //hybird encrypt
 
                             //uploading the file
                             //correctness
@@ -128,6 +135,13 @@ namespace WebApplication1.Controllers
             }
 
 
+        }
+
+        public IActionResult Download(string id)
+        {
+            MemoryStream toDownload = new MemoryStream();
+
+            return File(toDownload, "application/octet-stream", Guid.NewGuid() + ".pdf");
         }
     }
 }

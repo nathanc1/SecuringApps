@@ -54,5 +54,19 @@ namespace WebApplication1.Controllers
 
             }
         }
+
+        public IActionResult ViewSubmission(Guid id)
+        {
+            try
+            {
+                var myTask = _taskService.GetTask(id);
+                return View(myTask);
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error", "home");
+            }
+
+        }
     }
 }
