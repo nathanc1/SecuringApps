@@ -13,11 +13,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Mail;
 using WebApplication1.Models;
 
 namespace WebApplication1.Areas.Identity.Pages.Account
 {
-    [AllowAnonymous]
+    [Authorize(Roles = "teacher")]
     public class RegisterModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -57,24 +59,20 @@ namespace WebApplication1.Areas.Identity.Pages.Account
             [Display(Name = "Email")]
             public string Email { get; set; }
 
-            [Required]
-            [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
+   
             public string Password { get; set; }
 
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm password")]
-            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
-            public string ConfirmPassword { get; set; }
+      
         }
-
+        
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
         }
 
+
+        
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
@@ -82,9 +80,26 @@ namespace WebApplication1.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email, FirstName = Input.FirstName, LastName = Input.LastName, Address= Input.Address };
-                var result = await _userManager.CreateAsync(user, Input.Password);
+
+                string myval = Guid.NewGuid().ToString("d").Substring(1, 4).ToLower();
+                string myval2 = Guid.NewGuid().ToString("d").Substring(1, 4).ToUpper() + "@";
+
+
+
+                string resultRandom = myval + myval2;
+
+                var result = await _userManager.CreateAsync(user, resultRandom);
+
                 if (result.Succeeded)
                 {
+
+               
+                    await _userManager.AddToRoleAsync(user, "student");
+
+                    Input.Password = resultRandom;
+
+                    sendEmail(Input.Email,resultRandom);
+
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -108,14 +123,50 @@ namespace WebApplication1.Areas.Identity.Pages.Account
                         return LocalRedirect(returnUrl);
                     }
                 }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+            
+
+
+                // foreach (var error in result.Errors)
+                // {
+                //    ModelState.AddModelError(string.Empty, error.Description);
+                //  }
             }
 
             // If we got this far, something failed, redisplay form
             return Page();
+        }
+
+        public void sendEmail(string toEmail,string password)
+        {
+            System.Net.Mail.MailMessage mail = new System.Net.Mail.MailMessage();
+            mail.To.Add(toEmail);
+            mail.From = new MailAddress("caruananathan1550@outlook.com", "Email head", System.Text.Encoding.UTF8);
+            mail.Subject = "You're school email has been registered";
+            mail.SubjectEncoding = System.Text.Encoding.UTF8;
+            mail.Body = "The password is \n" + password;
+            mail.BodyEncoding = System.Text.Encoding.UTF8;
+            mail.IsBodyHtml = true;
+            mail.Priority = MailPriority.High;
+            SmtpClient client = new SmtpClient("smtp-mail.outlook.com");
+            client.UseDefaultCredentials = false;
+            client.Credentials = new System.Net.NetworkCredential("caruananathan1550@outlook.com", "mcast123@");
+            client.EnableSsl = true;
+            client.Port = 587;
+            try
+            {
+                client.Send(mail);
+            }
+            catch (Exception ex)
+            {
+                Exception ex2 = ex;
+                string errorMessage = string.Empty;
+                while (ex2 != null)
+                {
+                    errorMessage += ex2.ToString();
+                    ex2 = ex2.InnerException;
+                }
+               
+            }
         }
     }
 }

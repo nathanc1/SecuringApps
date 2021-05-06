@@ -43,7 +43,7 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public IActionResult ContactUs(string query, string email)
         {

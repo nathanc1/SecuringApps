@@ -30,12 +30,14 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = "teacher")]
         public IActionResult Create()
         {
             return View();
         }
         [HttpPost]
+        [Authorize(Roles = "teacher")]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(TaskViewModel data)
         {
             data.email = User.Identity.Name;

@@ -106,7 +106,7 @@ namespace WebApplication1.Utility
             CryptoStream cs = new CryptoStream(msOut, //the engine that operates encypting medium
                 myAlg.CreateEncryptor(keys.SecretKey, keys.Iv), //this will write the data fed into the medium
                 CryptoStreamMode.Write
-                );
+           );
 
             //5. we start encrypting engine
             msIn.CopyTo(cs);
@@ -242,6 +242,18 @@ namespace WebApplication1.Utility
             return Convert.ToBase64String(cipher);
 
         }
+
+        public static byte[]AsymmetricEncrypt(byte[] data, string publicKey)
+        {
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+
+    
+            byte[] cipher = myAlg.Encrypt(data, RSAEncryptionPadding.Pkcs1);
+
+            return cipher;
+
+        }
+
         public static string AsymmetricDecrypt(string cipher, string privateKey)
         {
             RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
@@ -266,16 +278,15 @@ namespace WebApplication1.Utility
 
 
             //3. Asymetrically encrypt using the public key, the symm key and iv above
-            string keyAsString = Convert.ToBase64String(key);
-            string encryptedKeyAsString = AsymmetricEncrypt(keyAsString, publicKey);
+            byte[] encKey = AsymmetricEncrypt(key, publicKey);
 
             //4. Store the above encrypted data in one file
-            byte[] encryptedKey = Convert.FromBase64String(encryptedKeyAsString);
+       
             //byte[] encryptedIv;
             //byte[] encryptedBytes;
 
             MemoryStream msOut = new MemoryStream();
-            msOut.Write(encryptedKey, 0, encryptedKey.Length);
+            msOut.Write(encKey, 0, encKey.Length);
             // msOut.Write(encryptedKey, 0, encryptedIv.Length);
             //msOut.Write(encryptedKey, 0, encryptedBytes.Length);
 
@@ -285,6 +296,40 @@ namespace WebApplication1.Utility
 
             return msOut;
         }
+        public static MemoryStream HybridDecrypt(MemoryStream encFile, string privateKey)
+        {
+            encFile.Position = 0;
+
+            //1) Read enc key
+            byte[] retrievedEncKey = new byte[128];
+            encFile.Read(retrievedEncKey, 0, 128);
+
+
+            //2) Read enc iv
+            byte[] retrievedEncIv = new byte[128];
+            encFile.Read(retrievedEncIv, 0, 128);
+
+            //3) Decrypt using the privatekey (asymmetric) the 1 and 2
+
+            //4) Read the rest of the file (which is the actual file content)
+            /*
+            long actualfilecontentbytes = encFile.Length - 256;
+            byte[] actualfilecontent = new byte[actualfilecontentbytes];
+            encFile.Read(actualfilecontent, 0, actualfilecontentbytes);
+            */
+            MemoryStream actualencryptedfilecontent = new MemoryStream();
+            encFile.CopyTo(actualencryptedfilecontent);
+
+            return null;
+
+            //5 Symmetrically dec what you read in no 4 using what you dec in step no 3
+
+
+
+
+        }
+
+
 
         public static string SignData(MemoryStream data, string privateKey)
         {

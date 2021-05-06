@@ -146,7 +146,7 @@ namespace WebApplication1.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
-
+          
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
@@ -154,6 +154,8 @@ namespace WebApplication1.Areas.Identity.Pages.Account
                     if (result.Succeeded)
                     {
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+
+                        await _userManager.AddToRoleAsync(user, "teacher");
 
                         var userId = await _userManager.GetUserIdAsync(user);
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

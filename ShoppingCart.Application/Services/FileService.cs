@@ -34,7 +34,7 @@ namespace ShoppingCart.Application.Services
 
         public IQueryable<FileViewModel> GetFiles(string email)
         {
-            return _filesRepo.GetFiles().Where(f => f.email == email).ProjectTo<FileViewModel>(_autoMapper.ConfigurationProvider);
+            return _filesRepo.GetFiles().Where(f => f.email == email || f.task.email == email).ProjectTo<FileViewModel>(_autoMapper.ConfigurationProvider);
         }
 
         public FileViewModel GetFile(Guid id)
