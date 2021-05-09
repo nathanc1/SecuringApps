@@ -39,7 +39,7 @@
                 <td>
                     @Html.ActionLink("Upload", "Create", "File", new { id = item.id })
 
-                    @Html.ActionLink("View Submission", "ViewSubmission", "Task", new { id = item.id })
+                    @Html.ActionLink("View Submission", "ViewSubmission", "Task", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.id.ToString()) })
                 </td>
             </tr>
         }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ShoppingCart.Application.Interfaces;
 using ShoppingCart.Application.ViewModels;
+using WebApplication1.ActionFilters;
+using WebApplication1.Utility;
 
 namespace WebApplication1.Controllers
 {
@@ -23,41 +25,80 @@ namespace WebApplication1.Controllers
             _logger = logger;
             _filesService = files;
         }
-        public IActionResult Index(Guid id)
+        public IActionResult Index(string id)
         {
-            var list = _commentsService.GetComments(id);
-            return View(list);
+            try
+            {
+                var cipher = Encryption.SymmetricDecrypt(id);
+
+                Guid val = Guid.Parse(cipher);
+
+                string email = User.Identity.Name;
+
+                var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress;
+
+                _logger.LogInformation("Current user accessing cooments section: " + remoteIpAddress + " TimeStamp: " + System.DateTime.Now + " User: " + email);
+
+                var list = _commentsService.GetComments(val);
+                return View(list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Comments list not working" + ex);
+                return RedirectToAction("Error", "home");
+            }
         }
         [HttpGet]
         public IActionResult Create(Guid id)
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception)
+            {
+                return RedirectToAction("Error", "home");
+            }
         }
 
         [HttpPost]
-        public IActionResult Create(CommentViewModel data, Guid id, DateTime myDate)
+        [StudentComment]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(CommentViewModel data, string id, DateTime myDate)
         {
-            var comments = _commentsService.GetComments(id);
-            myDate = System.DateTime.Now;
-            ViewBag.Comments = comments;
-
-
-            if (ModelState.IsValid)
+            try
             {
-                data.file = _filesService.GetFile(id);
-                
+                string email = User.Identity.Name;
+                var cipher = Encryption.SymmetricDecrypt(id);
 
-                _commentsService.AddComment(data,myDate);
+                Guid val = Guid.Parse(cipher);
+
+                var comments = _commentsService.GetComments(val);
+                myDate = System.DateTime.Now;
+                ViewBag.Comments = comments;
+
+                var allErrors = ModelState.Values.SelectMany(x => x.Errors);
+
+                data.file = _filesService.GetFile(val);
+
+
+                var remoteIpAddress = Request.HttpContext.Connection.RemoteIpAddress;
+
+                _logger.LogInformation("Current user uploading in comments section: " + remoteIpAddress + " TimeStamp: " + System.DateTime.Now + " User: " + email + " Comment Details: " + data.commentDetails);
+
+
+                _commentsService.AddComment(data, myDate);
 
                 TempData["Message"] = "Comment inserted successfuly";
                 return View();
-            }
-            else
+            } catch (Exception)
             {
-                ModelState.AddModelError("", "Error");
-                return View(data);
-
+                return RedirectToAction("Error", "home");
             }
+            
+            
+            
+            
         }
     }
 }

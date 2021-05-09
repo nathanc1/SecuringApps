@@ -10,6 +10,7 @@ namespace ShoppingCart.Application.ViewModels
 
         public string email { get; set; }
 
+        public string signature { get; set; }
         public string file { get; set; }
 
         public TaskViewModel task { get; set; }

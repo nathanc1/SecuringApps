@@ -47,7 +47,6 @@ namespace ShoppingCart.Application.Services
                 return result;
             }
         }
-
  
     }
 }

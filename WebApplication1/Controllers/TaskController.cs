@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ShoppingCart.Application.Interfaces;
 using ShoppingCart.Application.ViewModels;
+using WebApplication1.Utility;
 
 namespace WebApplication1.Controllers
 {
@@ -25,43 +26,74 @@ namespace WebApplication1.Controllers
 
         public IActionResult Index()
         {
-            var list = _taskService.GetTasks();
-            return View(list);
+            try
+            {
+                var list = _taskService.GetTasks();
+                return View(list);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Task list not working" + ex);
+                return RedirectToAction("Error", "home");
+            }
+       
         }
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
         public IActionResult Create()
         {
-            return View();
+            try
+            {
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation("Task creation page not working" + ex);
+                return RedirectToAction("Error", "home");
+            }
         }
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(TaskViewModel data)
         {
-            data.email = User.Identity.Name;
-
-            if (ModelState.IsValid)
+            try
             {
-                _taskService.AddTask(data);
+                data.email = User.Identity.Name;
 
-                TempData["Message"] = "Task inserted successfuly";
-                return View();
+                if (ModelState.IsValid)
+                {
+                    _taskService.AddTask(data);
+
+                    TempData["Message"] = "Task inserted successfuly";
+                    return View();
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Error");
+                    return View(data);
+
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ModelState.AddModelError("", "Error");
-                return View(data);
-
+                _logger.LogInformation("Task creation not working" + ex);
+                return RedirectToAction("Error", "home");
             }
         }
 
-        public IActionResult ViewSubmission(Guid id)
+        public IActionResult ViewSubmission(string id)
         {
             try
             {
-                var myTask = _taskService.GetTask(id);
+
+                var cipher = Encryption.SymmetricDecrypt(id);
+
+                Guid val = Guid.Parse(cipher);
+
+                var myTask = _taskService.GetTask(val);
                 return View(myTask);
             }
             catch (Exception)

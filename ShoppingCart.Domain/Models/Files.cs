@@ -15,6 +15,8 @@ namespace ShoppingCart.Domain.Models
 
         public string file { get; set; }
 
+        public string signature { get; set; }
+
         public virtual Task task { get; set; }
 
         [ForeignKey("Task")]

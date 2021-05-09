@@ -16,6 +16,10 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Mail;
 using WebApplication1.Models;
+using WebApplication1.Utility;
+using ShoppingCart.Application.ViewModels;
+using ShoppingCart.Application.Interfaces;
+using static WebApplication1.Utility.Encryption;
 
 namespace WebApplication1.Areas.Identity.Pages.Account
 {
@@ -25,18 +29,21 @@ namespace WebApplication1.Areas.Identity.Pages.Account
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly IMembersService _membersservice; 
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
+            IMembersService membersService,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _membersservice = membersService;
         }
 
         [BindProperty]
@@ -92,8 +99,20 @@ namespace WebApplication1.Areas.Identity.Pages.Account
 
                 if (result.Succeeded)
                 {
+                    AsymmetricKeys encKeys = new AsymmetricKeys();
+                    encKeys = Encryption.GenerateAsymmetricKeys();
 
-               
+                    MemberViewModel memberViewModel = new MemberViewModel();
+
+                    memberViewModel.FirstName = Input.FirstName;
+                    memberViewModel.LastName = Input.LastName;
+                    memberViewModel.Email = Input.Email;
+                    memberViewModel.teacherEmail = User.Identity.Name;
+                    memberViewModel.publicKey = encKeys.PublicKey;
+                    memberViewModel.privateKey = encKeys.PrivateKey;
+
+                    _membersservice.AddMember(memberViewModel);
+
                     await _userManager.AddToRoleAsync(user, "student");
 
                     Input.Password = resultRandom;

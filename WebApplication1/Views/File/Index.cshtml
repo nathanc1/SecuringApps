@@ -36,8 +36,9 @@
                         @Html.DisplayFor(modelItem => item.file)
                     </td>
                     <td>
-                        @Html.ActionLink("Upload Comment", "Create", "Comment", new { id = item.Id })
-                        @Html.ActionLink("View Comment", "Index", "Comment", new { id = item.Id })
+                        @Html.ActionLink("Upload Comment", "Create", "Comment", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
+                        @Html.ActionLink("View Comment", "Index", "Comment", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
+                        @Html.ActionLink("Download File", "Download", "File", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
                     </td>
 
                 </tr>

@@ -5,110 +5,57 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
 using System.IO;
-using static WebApplication1.Utility.Encryption;
 
 namespace WebApplication1.Utility
 {
-    //Symmetric encrpytion/decryption
-    //Same key to encryption and decrypt
-    //Adv: Fastest, simpler
-    //it uses Secret Key and IV + salt
-    //Disadv: you have to be very careful if you are going to use this one when sending files over an inescure network
-    //Asymmetric encryption/decryption
-    //it uses to different keys: Public Key and Private Key
-    //Public Key : Encrypt
-    //Private Key : decrypt (its always recommended to send over an insecure network the private key)
-    //Adv : we now can transfer the keys securely over an insecure network
-    //Disadv : This is a slow performing algorithm, you cannot encrypt/decrypt large data. normally used to encrypt base64 data
-
-    //Hybrid Encryption/decryption  //this is needed to encrypt the files uploaded by the student & decrypt the files when they are needed by the teachers
-    //we r going to take the adv of both the symmetic and the asymmetric to from the hybrid
-    //we are going to send over the insecure network the encrypted data which was encrypted symmetrically and therefore we are going to send the
-    //encrypted symmetric keys (which were encrypted with the public key)
-    //Hashing
-    //1 way encryption
-    //usage: in passwords
-    //sha 512
-    //two different values should give two different digests e.g. "hello world" and "hello world" >> 2 different digests
-
-    //Digital Signing
-    //against repudiation (when an attacker tampers with the data and he denies the activity)
-    //suggestion for the assignment : you generate a private & public key for every student
-    //when the user uploads the file, you take the private key and you sign the file and you store the signature with the file's data
-    //when the user/teacher needs to download/view the file we need to use the file's owner public key + signature, to verify the data is still same
-    //i.e belonging to that user
-
     public class Encryption
     {
-        /// This method takes a string and returns the digest as a string
-        /// 
-     
 
         public static string Hash(string clearText)
         {
-            //convert the clearText into an array of bytes
-            //cleartext is a non base64 data it has to be converted this way:
             byte[] clearTextAsBytes = Encoding.UTF32.GetBytes(clearText);
             byte[] digest = Hash(clearTextAsBytes);
-            //base64 data convert to/from  a string we have to use this class:
-            string digestAsStrings = Convert.ToBase64String(digest);
+            string digestAsString = Convert.ToBase64String(digest);
 
-            return digestAsStrings;
+            return digestAsString;
         }
 
         public static byte[] Hash(byte[] clearTextBytes)
         {
             SHA512 myAlg = SHA512.Create();
-
             byte[] digest = myAlg.ComputeHash(clearTextBytes);
             return digest;
-
         }
 
         static string password = "Pa$$w0rd";
-
-        static byte[] salt = new byte[]
-        {
+        static byte[] salt = new byte[] {
             20,1,34,56,78,34,11,111,234,43,180,139,127,34,52,45,255,253,1
         };
 
-        //this method is used to take in clear data and encrypt it and returns back the cipher (the encrypted data)
-
-        public static byte[] SymmetricEncrypt(byte[] clearData)
+        /// <summary>
+        /// This method is used to take in clear data and encrypt it and returns back to cipher
+        /// </summary>
+        /// <param name="clearData"></param>
+        /// <returns></returns>
+        public static byte[] SymmetricEnryption(byte[] clearData)
         {
-            //Note:
-            //1st thing to think of how you are going to handle the keys
-            //solution a) the key can be hardcoded
-            //solution b) the key can be randomized/generated out of something the user's password
-            //solution c) a password and salt which are hardcoded (which never change) out of which you generate "randomly" the key
-            //in the assignment:
-            //1 to encrypt/decrypt query string values
-            //2 to encrypt/decrypt the file data as part of the hybrid encryption/decryption 
-
-            //password will be the source of origin of our secret key
-            //the salt will add more security against an attacker guessing the password using dictionary attacks
-
-            //how do we generate a secret key
-            //note: each algorithm has a different sized secret key
-
-
-            //0 declare algorithm to use
+            //0. declare the algorithm to use
             Rijndael myAlg = Rijndael.Create();
-            //1.first we generate the secret key and iv
+
+            //1. first we generate the secret key and iv
             var keys = GenerateKeys();
 
+            //2. load the data into a memoryStream
             MemoryStream msIn = new MemoryStream(clearData);
-            msIn.Position = 0; //making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
+            msIn.Position = 0; //Making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
 
+            //3. declare where to store the encrypted data
             MemoryStream msOut = new MemoryStream();
 
-            //4.declaring a stream which handles data encryption
-            CryptoStream cs = new CryptoStream(msOut, //the engine that operates encypting medium
-                myAlg.CreateEncryptor(keys.SecretKey, keys.Iv), //this will write the data fed into the medium
-                CryptoStreamMode.Write
-           );
+            //4. declaring a Stream which handles data encryption
+            CryptoStream cs = new CryptoStream(msOut, myAlg.CreateEncryptor(keys.SecretKey, keys.Iv), CryptoStreamMode.Write);
 
-            //5. we start encrypting engine
+            //5. we start the encrypting engine
             msIn.CopyTo(cs);
 
             //6. make sure that the data is all written (flushed) into msOut
@@ -119,19 +66,43 @@ namespace WebApplication1.Utility
 
             //8
             return msOut.ToArray();
-
-
         }
 
+        public static byte[] SymmetricEnryption(byte[] clearData, SymmetricKeys keys)
+        {
+            //0. declare the algorithm to use
+            Rijndael myAlg = Rijndael.Create();
 
+            //1. first we generate the secret key and iv
+            //var keys = GenerateKeys();
+
+            //2. load the data into a memoryStream
+            MemoryStream msIn = new MemoryStream(clearData);
+            msIn.Position = 0; //Making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
+
+            //3. declare where to store the encrypted data
+            MemoryStream msOut = new MemoryStream();
+
+            //4. declaring a Stream which handles data encryption
+            CryptoStream cs = new CryptoStream(msOut, myAlg.CreateEncryptor(keys.SecretKey, keys.Iv), CryptoStreamMode.Write);
+
+            //5. we start the encrypting engine
+            msIn.CopyTo(cs);
+
+            //6. make sure that the data is all written (flushed) into msOut
+            cs.FlushFinalBlock();
+
+            //7
+            cs.Close();
+
+            //8
+            return msOut.ToArray();
+        }
 
         public static SymmetricKeys GenerateKeys()
         {
-            //password + Salt >>>> algorithm >>> secret key + IV (which is the input needed by the encryption algorithm
             Rijndael myAlg = Rijndael.Create();
-
             Rfc2898DeriveBytes myGenerator = new Rfc2898DeriveBytes(password, salt);
-
             SymmetricKeys keys = new SymmetricKeys()
             {
                 SecretKey = myGenerator.GetBytes(myAlg.KeySize / 8),
@@ -141,25 +112,25 @@ namespace WebApplication1.Utility
             return keys;
         }
 
-        public static byte[] SymmetricDecrypt(byte[] clearData)
+        public static byte[] SymmetricDecrypt(byte[] cipherAsBytes)
         {
-            //0 declare algorithm to use
+            //0. declare the algorithm to use
             Rijndael myAlg = Rijndael.Create();
-            //1.first we generate the secret key and iv
+
+            //1. first we generate the secret key and iv
             var keys = GenerateKeys();
 
-            MemoryStream msIn = new MemoryStream(clearData);
-            msIn.Position = 0; //making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
+            //2. load the data into a memoryStream
+            MemoryStream msIn = new MemoryStream(cipherAsBytes);
+            msIn.Position = 0; //Making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
 
+            //3. declare where to store the clear data
             MemoryStream msOut = new MemoryStream();
 
-            //4.declaring a stream which handles data decryption
-            CryptoStream cs = new CryptoStream(msOut, //the engine that operates encypting medium
-                myAlg.CreateDecryptor(keys.SecretKey, keys.Iv), //this will write the data fed into the medium
-                CryptoStreamMode.Write
-                );
+            //4. declaring a Stream which handles data decryption
+            CryptoStream cs = new CryptoStream(msOut, myAlg.CreateDecryptor(keys.SecretKey, keys.Iv), CryptoStreamMode.Write);
 
-            //5. we start encrypting engine
+            //5. we start the encrypting engine
             msIn.CopyTo(cs);
 
             //6. make sure that the data is all written (flushed) into msOut
@@ -172,54 +143,61 @@ namespace WebApplication1.Utility
             return msOut.ToArray();
         }
 
-        
+        public static byte[] SymmetricDecrypt(byte[] cipherAsBytes, SymmetricKeys keys)
+        {
+            //0. declare the algorithm to use
+            Rijndael myAlg = Rijndael.Create();
 
-         public static string SymmetricEncrypt(string ClearData)
-         {
-            //1. convert
-            //  To convert any input (given by the user) we normally use Econding.<character set>.GetByes(...)
-            byte[] clearDataAsBytes = Encoding.UTF32.GetBytes(ClearData);
+            //1. first we generate the secret key and iv
 
-            //2. encrypting
-            byte [] cipherAsBytes = SymmetricEncrypt(clearDataAsBytes);
+            //2. load the data into a memoryStream
+            MemoryStream msIn = new MemoryStream(cipherAsBytes);
+            msIn.Position = 0; //Making sure that the pointer of the byte to read next is at the beginning so we encrypt everything
 
-            //3.converting back to a string
-            // to convert from base64 bytes ( which is the output of any cryptographic algorithm) we have to use Convert.ToBase64String
+            //3. declare where to store the clear data
+            MemoryStream msOut = new MemoryStream();
+
+            //4. declaring a Stream which handles data decryption
+            CryptoStream cs = new CryptoStream(msOut, myAlg.CreateDecryptor(keys.SecretKey, keys.Iv), CryptoStreamMode.Write);
+
+            //5. we start the encrypting engine
+            msIn.CopyTo(cs);
+
+            //6. make sure that the data is all written (flushed) into msOut
+            cs.FlushFinalBlock();
+
+            //7
+            cs.Close();
+
+            //8
+            return msOut.ToArray();
+        }
+
+        public static string SymmetricEncrypt(string clearData)
+        {
+            byte[] clearDataAsBytes = Encoding.UTF32.GetBytes(clearData);
+            byte[] cipherAsBytes = SymmetricEnryption(clearDataAsBytes);
             string cipher = Convert.ToBase64String(cipherAsBytes);
 
-            cipher = cipher.Replace("/", "£").Replace("+", "$").Replace("=", "*").Replace("&", "_");
-
-            //replace / + =
+            cipher = cipher.Replace("/", "£").Replace("+", "_").Replace("=", "*");
 
             return cipher;
-         }
+        }
 
         public static string SymmetricDecrypt(string cipher)
         {
-            cipher = cipher.Replace("£", "/").Replace("$", "+").Replace("*", "=").Replace("_", "&");
+            cipher = cipher.Replace("£", "/").Replace("_", "+").Replace("*", "=");
 
-            //1. convert
-            //  To convert any input (given by the user) we normally use Econding.<character set>.GetByes(...)
-            byte[] cipherDataAsBytes = Convert.FromBase64String(cipher);
+            byte[] clearDataAsBytes = Convert.FromBase64String(cipher);
+            byte[] clearAsBytes = SymmetricDecrypt(clearDataAsBytes);
 
-            //2. decryption
-            byte[] clearDataAsBytes = SymmetricDecrypt(cipherDataAsBytes);
-
-            //3.converting back to a string
-            // to convert from base64 bytes ( which is the output of any cryptographic algorithm) we have to use Convert.ToBase64String
-            string originalText = Encoding.UTF32.GetString(clearDataAsBytes);
-
+            string originalText = Encoding.UTF32.GetString(clearAsBytes);
             return originalText;
         }
 
-        //Asymmetric Encryption/Decryption
-        //public key = is used to encrypt
-        //private key = is used to decrypt
+   
 
-        //my recommendation is thiS:
-        //when a user is registered in addition to his/her details, you also generate this pair of keys (and store them in the db)
-
-    
+      
 
         public static AsymmetricKeys GenerateAsymmetricKeys()
         {
@@ -230,123 +208,141 @@ namespace WebApplication1.Utility
                 PublicKey = myAlg.ToXmlString(false),
                 PrivateKey = myAlg.ToXmlString(true)
             };
-            return myKeys;
-         }
-        public static string AsymmetricEncrypt(string data, string publicKey)
-        {
-            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
 
+            return myKeys;
+        }
+
+        public class AsymmetricKeys
+        {
+            public string PublicKey { get; set; }
+            public string PrivateKey { get; set; }
+        }
+
+        public static byte[] AsymmetricEnrypt(byte[] data, string publicKey)
+        {
+            /*
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+            myAlg.FromXmlString(publicKey);
             byte[] dataAsBytes = Encoding.UTF32.GetBytes(data);
             byte[] cipher = myAlg.Encrypt(dataAsBytes, RSAEncryptionPadding.Pkcs1);
 
             return Convert.ToBase64String(cipher);
+            */
 
-        }
-
-        public static byte[]AsymmetricEncrypt(byte[] data, string publicKey)
-        {
             RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
-
-    
+            myAlg.FromXmlString(publicKey);
             byte[] cipher = myAlg.Encrypt(data, RSAEncryptionPadding.Pkcs1);
 
             return cipher;
-
         }
 
-        public static string AsymmetricDecrypt(string cipher, string privateKey)
+        public static byte[] AsymmetricDecrypt(byte[] cipher, string privateKey)
         {
+            /*
             RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
             myAlg.FromXmlString(privateKey);
-
             byte[] cipherAsBytes = Convert.FromBase64String(cipher);
-
             byte[] originalTextAsBytes = myAlg.Decrypt(cipherAsBytes, RSAEncryptionPadding.Pkcs1);
 
             return Encoding.UTF32.GetString(originalTextAsBytes);
+            */
 
+            RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
+            myAlg.FromXmlString(privateKey);
+            byte[] originalTextAsBytes = myAlg.Decrypt(cipher, RSAEncryptionPadding.Pkcs1);
+
+            return originalTextAsBytes;
         }
 
         public static MemoryStream HybridEncrypt(MemoryStream clearFile, string publicKey)
         {
+            //1. Generate the symmetric keys
             Rijndael myAlg = Rijndael.Create();
-            myAlg.GenerateKey(); myAlg.GenerateIV();
-            var key = myAlg.Key;var iv = myAlg.IV;
+            myAlg.GenerateKey();
+            myAlg.GenerateIV();
+            var key = myAlg.Key;
+            var iv = myAlg.IV;
 
-            //2 .Encrypting the clearFile using Symmetric Encrpytion
-            //var encryptedBytes   SymmetricEncrypt(clearFileAsBytes, key, iv);
+            //2. Encrypting the clearFile using Symmetric Encryption
+            
+            SymmetricKeys keys = new SymmetricKeys();
+            keys.SecretKey = key;
+            keys.Iv = iv;
+            
 
+            //3. Asymmetrically encrypt using the public key, the sym key and iv above
+            //string keyS = Convert.ToBase64String(key);
+            byte[] encryptedKey = AsymmetricEnrypt(key, publicKey);
 
-            //3. Asymetrically encrypt using the public key, the symm key and iv above
-            byte[] encKey = AsymmetricEncrypt(key, publicKey);
-
-            //4. Store the above encrypted data in one file
-       
-            //byte[] encryptedIv;
-            //byte[] encryptedBytes;
+            //4. Store the above encrypted data n one file
+            byte[] encryptedIv = AsymmetricEnrypt(iv, publicKey);
 
             MemoryStream msOut = new MemoryStream();
-            msOut.Write(encKey, 0, encKey.Length);
-            // msOut.Write(encryptedKey, 0, encryptedIv.Length);
-            //msOut.Write(encryptedKey, 0, encryptedBytes.Length);
+            msOut.Write(encryptedKey, 0, encryptedKey.Length);
+            msOut.Write(encryptedIv, 0, encryptedIv.Length);
 
-          //  MemoryStream encryptedFileContent = new MemoryStream(encryptedBytes);
-          //  encryptedFileContent.Position = 0;
-          //  encryptedFileContent.CopyTo(msOut);
+            byte[] bytes = clearFile.ToArray();
+            byte[] encryptedBytes = SymmetricEnryption(bytes, keys);
 
+            MemoryStream encryptedfileContent = new MemoryStream(encryptedBytes);
+            encryptedfileContent.Position = 0;
+            encryptedfileContent.CopyTo(msOut);
+            
             return msOut;
         }
+
         public static MemoryStream HybridDecrypt(MemoryStream encFile, string privateKey)
         {
             encFile.Position = 0;
 
             //1) Read enc key
             byte[] retrievedEncKey = new byte[128];
-            encFile.Read(retrievedEncKey, 0, 128);
-
+            encFile.Read(retrievedEncKey,0,128);
 
             //2) Read enc iv
             byte[] retrievedEncIv = new byte[128];
             encFile.Read(retrievedEncIv, 0, 128);
 
             //3) Decrypt using the privatekey (asymmetric) the 1 and 2
-
-            //4) Read the rest of the file (which is the actual file content)
+            byte[] decKey = AsymmetricDecrypt(retrievedEncKey, privateKey);
+            byte[] decIv = AsymmetricDecrypt(retrievedEncIv, privateKey);
+            
+            SymmetricKeys keys = new SymmetricKeys();
+            keys.SecretKey = decKey;
+            keys.Iv = decIv;
             /*
-            long actualfilecontentbytes = encFile.Length - 256;
-            byte[] actualfilecontent = new byte[actualfilecontentbytes];
-            encFile.Read(actualfilecontent, 0, actualfilecontentbytes);
+            MemoryStream msOut = new MemoryStream();
+            msOut.Write(decKey, 0, decKey.Length);
+            msOut.Write(decIv, 0, decIv.Length);
             */
+            //4) Read the rest of the file (which is the actual file content)
+
             MemoryStream actualencryptedfilecontent = new MemoryStream();
             encFile.CopyTo(actualencryptedfilecontent);
 
-            return null;
-
             //5 Symmetrically dec what you read in no 4 using what you dec in step no 3
+            byte[] bytes = actualencryptedfilecontent.ToArray();
+            byte[] decFile = SymmetricDecrypt(bytes, keys);
 
-
-
-
+            MemoryStream actualFile = new MemoryStream(decFile);
+            return actualFile;
         }
-
-
 
         public static string SignData(MemoryStream data, string privateKey)
         {
             RSACryptoServiceProvider myAlg = new RSACryptoServiceProvider();
             myAlg.FromXmlString(privateKey);
 
+            //Change the data from MemoryStream into byte[]
             byte[] dataAsBytes = data.ToArray();
 
             //Hash the data
             byte[] digest = Hash(dataAsBytes);
-
             byte[] signatureAsBytes = myAlg.SignHash(digest, "SHA512");
+
             //save the signature in the database > table containing the file data
 
             return Convert.ToBase64String(signatureAsBytes);
-
-
         }
 
         public static bool VerifyData(MemoryStream data, string publicKey, string signature)
@@ -355,26 +351,17 @@ namespace WebApplication1.Utility
             myAlg.FromXmlString(publicKey);
 
             byte[] dataAsBytes = data.ToArray();
-
-            //Hash the data
             byte[] digest = Hash(dataAsBytes);
 
             byte[] signatureAsBytes = Convert.FromBase64String(signature);
-
             bool valid = myAlg.VerifyHash(digest, "SHA512", signatureAsBytes);
-
             return valid;
         }
-    }
 
-    public class AsymmetricKeys
-    {
-        public string PublicKey { get; set; }
-        public string PrivateKey { get; set; }
-    }
-    public class SymmetricKeys
-    {
-        public byte[] SecretKey { get; set; }
-        public byte[] Iv { get; set; }
+        public class SymmetricKeys
+        {
+            public byte[] SecretKey { get; set; }
+            public byte[] Iv { get; set; }
+        }
     }
 }
