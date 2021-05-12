@@ -212,7 +212,6 @@ namespace WebApplication1.Controllers
                     MemoryStream fileContent = Encryption.HybridDecrypt(toDownload, member.privateKey);
 
                     return File(fileContent, "application/ocet-stream", Guid.NewGuid() + ".pdf");
-
                 }
                 else
                 {

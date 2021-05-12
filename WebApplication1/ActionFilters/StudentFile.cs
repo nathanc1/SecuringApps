@@ -22,12 +22,11 @@ namespace WebApplication1.ActionFilters
 
                 foreach (var sub in file)
                 {
-                    if (sub.email != currentLoggedInUser)
+                    if (sub.email != currentLoggedInUser && sub.task.email != currentLoggedInUser)
                     {
                         context.Result = new UnauthorizedObjectResult("Access Denied");
                     }
-                }
-              
+                } 
             }
             catch (Exception ex)
             {

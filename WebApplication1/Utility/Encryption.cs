@@ -186,13 +186,18 @@ namespace WebApplication1.Utility
 
         public static string SymmetricDecrypt(string cipher)
         {
-            cipher = cipher.Replace("£", "/").Replace("_", "+").Replace("*", "=");
+         
+                cipher = cipher.Replace("£", "/").Replace("_", "+").Replace("*", "=");
 
-            byte[] clearDataAsBytes = Convert.FromBase64String(cipher);
-            byte[] clearAsBytes = SymmetricDecrypt(clearDataAsBytes);
 
-            string originalText = Encoding.UTF32.GetString(clearAsBytes);
-            return originalText;
+
+                byte[] clearDataAsBytes = Convert.FromBase64String(cipher);
+                byte[] clearAsBytes = SymmetricDecrypt(clearDataAsBytes);
+
+                string originalText = Encoding.UTF32.GetString(clearAsBytes);
+                return originalText;
+            
+         
         }
 
    
