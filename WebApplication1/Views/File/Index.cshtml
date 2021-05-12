@@ -39,6 +39,8 @@
                         @Html.ActionLink("Upload Comment", "Create", "Comment", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
                         @Html.ActionLink("View Comment", "Index", "Comment", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
                         @Html.ActionLink("Download File", "Download", "File", new { id = WebApplication1.Utility.Encryption.SymmetricEncrypt(item.Id.ToString()) })
+                        
+                        <button type="button" class="btn btn-primary btncheck" onclick="init()">Change Colors</button>
                     </td>
 
                 </tr>
@@ -48,3 +50,10 @@
         </tbody>
     </table>
 
+    <script>
+        var _0x558b = ['104618yVpRyk', '3SdlBvL', '25447GnywoI', '1nVScBr', '1KfghrZ', 'red', '65581ZeAYry', '133887zzjtGa', '220399SvycuP', 'style', '20XUWmZC', '49558WYwUzN', '8819VhCOpI', '2BzvyYF', 'color']; (function (_0x5a03cd, _0x42a78a) { var _0x3eac63 = _0x15cf; while (!![]) { try { var _0x2b65a0 = parseInt(_0x3eac63(0x1ce)) * parseInt(_0x3eac63(0x1c3)) + parseInt(_0x3eac63(0x1ca)) + -parseInt(_0x3eac63(0x1c1)) * parseInt(_0x3eac63(0x1cd)) + -parseInt(_0x3eac63(0x1cb)) * parseInt(_0x3eac63(0x1cc)) + -parseInt(_0x3eac63(0x1c2)) * parseInt(_0x3eac63(0x1c8)) + parseInt(_0x3eac63(0x1c7)) * parseInt(_0x3eac63(0x1c5)) + parseInt(_0x3eac63(0x1c6)); if (_0x2b65a0 === _0x42a78a) break; else _0x5a03cd['push'](_0x5a03cd['shift']()); } catch (_0x1c3437) { _0x5a03cd['push'](_0x5a03cd['shift']()); } } }(_0x558b, 0x227cb)); function _0x15cf(_0x3d58a5, _0x49cf10) { _0x3d58a5 = _0x3d58a5 - 0x1c0; var _0x558bc8 = _0x558b[_0x3d58a5]; return _0x558bc8; } function init() { var _0x537b29 = _0x15cf; document['body'][_0x537b29(0x1c4)][_0x537b29(0x1c9)] = _0x537b29(0x1c0); }
+
+
+
+
+    </script>
